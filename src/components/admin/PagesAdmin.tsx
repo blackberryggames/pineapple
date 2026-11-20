@@ -42,7 +42,7 @@ export default function PagesAdmin() {
     <div className="grid lg:grid-cols-[1fr_20rem] gap-10">
       <form onSubmit={save} className="space-y-4">
         <h2 className="display text-2xl">{editing ? "Edit page" : "New page"}</h2>
-        <p className="text-sm text-muted">Build pages like a simple site editor. A page with the slug <code className="text-pine">home</code> shows its blocks on the home page, under the featured game.</p>
+        <p className="text-sm text-muted">Build pages like a simple site editor. A page with the slug <code className="text-link">home</code> shows its blocks on the home page, under the featured game.</p>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Title"><input className="field" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="About" /></Field>
           <Field label="Slug"><input className="field" value={slug} disabled={editing} onChange={(e) => setSlug(e.target.value)} placeholder={slugify(title) || "about"} /></Field>
@@ -51,12 +51,12 @@ export default function PagesAdmin() {
 
         <div className="space-y-3">
           {blocks.map((b, i) => (
-            <div key={i} className="border-2 border-line rounded-[3px] p-3 bg-panel space-y-2">
+            <div key={i} className="border-2 border-line rounded-2xl p-3 bg-card space-y-2">
               <div className="flex items-center gap-3">
                 <span className="label">{b.type}</span>
                 <span className="ml-auto flex gap-3 label">
-                  <button type="button" onClick={() => move(i, -1)} className="hover:text-cream">up</button>
-                  <button type="button" onClick={() => move(i, 1)} className="hover:text-cream">down</button>
+                  <button type="button" onClick={() => move(i, -1)} className="hover:text-fg">up</button>
+                  <button type="button" onClick={() => move(i, 1)} className="hover:text-fg">down</button>
                   <button type="button" onClick={() => setBlocks((bs) => bs.filter((_, j) => j !== i))} className="hover:text-hot">remove</button>
                 </span>
               </div>
@@ -79,10 +79,10 @@ export default function PagesAdmin() {
       </form>
       <ul className="space-y-2">
         {data.map((p) => (
-          <li key={p.id} className="border-2 border-line rounded-[3px] p-3 bg-panel">
+          <li key={p.id} className="border-2 border-line rounded-2xl p-3 bg-card">
             <div className="font-medium">{p.title}</div><div className="label">/{p.id}</div>
             <div className="flex gap-4 mt-1">
-              <button className="label hover:text-pine" onClick={() => load(p)}>edit</button>
+              <button className="label hover:text-link" onClick={() => load(p)}>edit</button>
               <button className="label hover:text-hot" onClick={() => confirm(`Delete "${p.title}"?`) && deleteDoc(doc(db, "pages", p.id))}>del</button>
             </div>
           </li>

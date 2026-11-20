@@ -62,11 +62,11 @@ export default function ChangelogAdmin() {
       </form>
       <ul className="space-y-2">
         {data.map((c) => (
-          <li key={c.id} className="border-2 border-line rounded-[3px] p-3 bg-panel">
+          <li key={c.id} className="border-2 border-line rounded-2xl p-3 bg-card">
             <div className="label">{fmtDate(c.createdAt)}</div>
-            <div className="font-medium"><span className="text-pine">{c.version}</span> {c.title}</div>
+            <div className="font-medium"><span className="text-link">{c.version}</span> {c.title}</div>
             <div className="flex gap-4 mt-1">
-              <button className="label hover:text-pine" onClick={() => load(c)}>edit</button>
+              <button className="label hover:text-link" onClick={() => load(c)}>edit</button>
               <button className="label hover:text-hot" onClick={() => confirm("Delete this release?") && deleteDoc(doc(db, "changelogs", c.id))}>del</button>
             </div>
           </li>

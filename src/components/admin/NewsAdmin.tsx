@@ -37,11 +37,11 @@ export default function NewsAdmin() {
       </form>
       <ul className="space-y-2">
         {data.map((a) => (
-          <li key={a.id} className="border-2 border-line rounded-[3px] p-3 bg-panel">
+          <li key={a.id} className="border-2 border-line rounded-2xl p-3 bg-card">
             <div className="label">{fmtDate(a.createdAt)}{a.pinned ? " · pinned" : ""}</div>
             <div className="font-medium">{a.title}</div>
             <div className="flex gap-4 mt-1">
-              <button className="label hover:text-pine" onClick={() => { setEditing(a.id); setTitle(a.title); setBody(a.body); setPinned(!!a.pinned); }}>edit</button>
+              <button className="label hover:text-link" onClick={() => { setEditing(a.id); setTitle(a.title); setBody(a.body); setPinned(!!a.pinned); }}>edit</button>
               <button className="label hover:text-hot" onClick={() => confirm("Delete this announcement?") && deleteDoc(doc(db, "announcements", a.id))}>del</button>
             </div>
           </li>

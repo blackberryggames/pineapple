@@ -8,7 +8,6 @@ export type Game = {
   category: string;
   tags: string[];
   kind: "html" | "link";
-  html?: string;
   url?: string;
   thumbnail?: string; // base64 data URL
   featured?: boolean;

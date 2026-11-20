@@ -1,6 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Game } from "@/lib/types";
+import { fetchGameHtml } from "@/lib/data";
+import Icon from "./Icon";
+import { Art2 } from "./Cover";
 
 type FsEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
 type FsDoc = Document & { webkitFullscreenElement?: Element; webkitExitFullscreen?: () => Promise<void> };
@@ -10,9 +13,14 @@ export default function Player({ game }: { game: Game }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [fs, setFs] = useState(false);
   const [started, setStarted] = useState(false);
+  const [html, setHtml] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const [key, setKey] = useState(0);
 
   const realFs = () => (document as FsDoc).fullscreenElement || (document as FsDoc).webkitFullscreenElement;
+
+  // new game selected -> back to the play screen
+  useEffect(() => { setStarted(false); setHtml(null); setFailed(false); }, [game.id]);
 
   useEffect(() => {
     const onChange = () => setFs(!!realFs());
@@ -26,6 +34,14 @@ export default function Player({ game }: { game: Game }) {
       window.removeEventListener("keydown", onKey);
     };
   }, []);
+
+  const start = useCallback(async () => {
+    setStarted(true);
+    if (game.kind === "html" && html === null) {
+      try { setHtml(await fetchGameHtml(game.id)); } catch { setFailed(true); }
+    }
+    setTimeout(() => frame.current?.focus(), 80);
+  }, [game.kind, game.id, html]);
 
   const toggleFs = useCallback(async () => {
     const el = box.current as FsEl | null;
@@ -44,42 +60,46 @@ export default function Player({ game }: { game: Game }) {
   }, []);
 
   const sandbox = "allow-scripts allow-pointer-lock allow-forms allow-popups allow-modals allow-downloads" + (game.needsStorage || game.kind === "link" ? " allow-same-origin" : "");
+  const ready = started && (game.kind === "link" || html !== null);
 
   return (
     <div>
-      <div ref={box} className="relative bg-black border-2 border-line rounded-[3px] aspect-video w-full flex flex-col">
+      {/* aspect ratio is reserved up front so the page never jumps when the game loads */}
+      <div ref={box} className="relative bg-black rounded-3xl overflow-hidden aspect-video w-full flex flex-col shadow-[0_18px_40px_-18px_rgba(35,31,22,.6)]">
         {!started ? (
-          <button onClick={() => { setStarted(true); setTimeout(() => frame.current?.focus(), 50); }} className="absolute inset-0 grid place-items-center group" aria-label={`Play ${game.title}`}>
-            <span className="btn btn-pine !text-lg !px-8 !py-3 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px]">▶ Play {game.title}</span>
+          <button onClick={() => { start(); }} className="absolute inset-0 group" aria-label={`Play ${game.title}`}>
+            <div className="absolute inset-0 scale-110 blur-xl opacity-70"><Art2 game={game} /></div>
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-28 sm:w-36 aspect-square rounded-3xl overflow-hidden shadow-2xl rotate-[-3deg] group-hover:rotate-0 transition-transform"><Art2 game={game} /></div>
+                <span className="btn btn-pine !text-lg !px-8 !py-3"><Icon name="play" size={20} fill />Play</span>
+              </div>
+            </div>
           </button>
+        ) : failed ? (
+          <div className="flex-1 grid place-items-center text-white/80 font-bold">Couldn&apos;t load this game. Try again in a moment.</div>
+        ) : !ready ? (
+          <div className="flex-1 grid place-items-center text-white/70 font-bold">Loading…</div>
         ) : (
           <iframe
-            key={key}
-            ref={frame}
-            title={game.title}
-            className="flex-1 w-full bg-white"
-            {...(game.kind === "html" ? { srcDoc: game.html } : { src: game.url })}
-            sandbox={sandbox}
-            allow="fullscreen; autoplay; gamepad; clipboard-write; accelerometer; gyroscope"
-            allowFullScreen
+            key={key} ref={frame} title={game.title} className="flex-1 w-full bg-white"
+            {...(game.kind === "html" ? { srcDoc: html ?? "" } : { src: game.url })}
+            sandbox={sandbox} allow="fullscreen; autoplay; gamepad; clipboard-write; accelerometer; gyroscope" allowFullScreen
             onLoad={() => frame.current?.focus()}
           />
         )}
-        {fs && (
-          <button onClick={toggleFs} className="btn btn-pine absolute top-3 right-3 z-10 opacity-60 hover:opacity-100">Exit fullscreen</button>
-        )}
+        {fs && <button onClick={toggleFs} className="btn btn-pine absolute top-3 right-3 z-10 opacity-70 hover:opacity-100">Exit fullscreen</button>}
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mt-3">
-        <button className="btn btn-pine" onClick={async () => { if (!started) setStarted(true); await toggleFs(); }}>
-          {fs ? "Exit fullscreen" : "Fullscreen"}
+        <button className="btn btn-pine" onClick={async () => { if (!started) await start(); await toggleFs(); }}>
+          <Icon name={fs ? "shrink" : "expand"} size={18} />{fs ? "Exit fullscreen" : "Fullscreen"}
         </button>
-        <button className="btn btn-ghost" disabled={!started} onClick={() => setKey((k) => k + 1)}>Restart</button>
-        {game.kind === "link" && game.url && (
-          <a className="btn btn-ghost" href={game.url} target="_blank" rel="noopener noreferrer">Open in new tab</a>
-        )}
-        {game.kind === "link" && <span className="label">Blank? The site may block embedding. Use “Open in new tab”.</span>}
+        <button className="btn" disabled={!ready} onClick={() => setKey((k) => k + 1)}><Icon name="restart" size={17} />Restart</button>
+        {game.kind === "link" && game.url && <a className="btn" href={game.url} target="_blank" rel="noopener noreferrer"><Icon name="ext" size={17} />New tab</a>}
       </div>
+      {game.kind === "link" && <p className="text-sm font-semibold text-muted mt-2">If the game stays blank, that site doesn&apos;t allow embedding. Use New tab.</p>}
     </div>
   );
 }

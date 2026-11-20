@@ -20,7 +20,7 @@ export function timeAgo(t?: Timestamp) {
 }
 
 /** Resize + re-encode an image file so it fits comfortably in a Firestore doc (1 MiB limit). */
-export function fileToCompressedDataUrl(file: File, maxW = 640, quality = 0.82): Promise<string> {
+export function fileToCompressedDataUrl(file: File, maxW = 480, quality = 0.78): Promise<string> {
   return new Promise((resolve, reject) => {
     const fr = new FileReader();
     fr.onerror = () => reject(new Error("Could not read file"));
@@ -47,13 +47,8 @@ export function fileToCompressedDataUrl(file: File, maxW = 640, quality = 0.82):
   });
 }
 
-/** Deterministic flat colour pair from a string, for games without a thumbnail. */
-const SWATCHES = [
-  ["#f2c230", "#1a1710"], ["#7fb069", "#10170d"], ["#e4572e", "#1c0f0b"], ["#4ea5b8", "#0a1519"],
-  ["#e9d8a6", "#1d1a10"], ["#d98cb3", "#1c1017"], ["#f29e4c", "#1c130a"], ["#a7c957", "#12160a"],
-];
-export function swatchFor(s: string) {
+export function hashStr(s: string) {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return SWATCHES[h % SWATCHES.length];
+  return h;
 }

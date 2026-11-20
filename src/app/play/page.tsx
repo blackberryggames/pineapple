@@ -3,12 +3,13 @@ import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { doc, increment, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { MOCK } from "@/lib/mock";
 import { useDoc, useGames } from "@/lib/data";
 import type { Game } from "@/lib/types";
 import Player from "@/components/Player";
 import { Comments, LikeButton } from "@/components/Engage";
-import GameTile from "@/components/GameTile";
-import { Empty, Loading, SectionHead } from "@/components/Bits";
+import Tile from "@/components/Tile";
+import { Empty, Loading } from "@/components/Bits";
 
 function Play() {
   const id = useSearchParams().get("id");
@@ -17,7 +18,7 @@ function Play() {
 
   // count one play per browser session
   useEffect(() => {
-    if (!id || !game) return;
+    if (!id || !game || MOCK) return;
     try {
       const k = `played:${id}`;
       if (sessionStorage.getItem(k)) return;
@@ -27,7 +28,12 @@ function Play() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, !!game]);
 
-  const more = useMemo(() => all.filter((g) => g.id !== id && game && g.category === game.category).slice(0, 4), [all, id, game]);
+  // same category first, then fill with whatever is newest
+  const more = useMemo(() => {
+    if (!game) return [];
+    const others = all.filter((g) => g.id !== game.id);
+    return [...others.filter((g) => g.category === game.category), ...others.filter((g) => g.category !== game.category)].slice(0, 12);
+  }, [all, game]);
 
   useEffect(() => { if (game) document.title = `${game.title} · Pineapple Games`; }, [game]);
 
@@ -35,34 +41,36 @@ function Play() {
   if (!game) return <Empty>Game not found. It may have been removed.</Empty>;
 
   return (
-    <div className="space-y-10">
-      <div className="grid xl:grid-cols-[1fr_18rem] gap-8">
+    <div className="grid xl:grid-cols-[minmax(0,1fr)_21rem] gap-8">
+      <div className="min-w-0 space-y-8">
         <div>
-          <h1 className="display text-3xl sm:text-5xl mb-4">{game.title}</h1>
+          <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+            <div>
+              <h1 className="display text-4xl sm:text-5xl">{game.title}</h1>
+              <div className="label mt-2">{game.category} · {(game.playCount ?? 0).toLocaleString()} plays</div>
+            </div>
+            <LikeButton gameId={game.id} count={game.likeCount ?? 0} />
+          </div>
           <Player game={game} />
         </div>
-        <aside className="space-y-5 xl:pt-[4.5rem]">
-          <LikeButton gameId={game.id} count={game.likeCount ?? 0} />
-          <div className="label">{game.category} · {game.playCount ?? 0} plays</div>
-          {game.description && <p className="leading-relaxed whitespace-pre-wrap">{game.description}</p>}
-          {game.controls && (
-            <div>
-              <div className="label mb-1">Controls</div>
-              <p className="text-sm whitespace-pre-wrap border-2 border-line rounded-[3px] p-3 bg-panel">{game.controls}</p>
-            </div>
-          )}
-          {game.tags?.length > 0 && <div className="flex flex-wrap gap-1.5">{game.tags.map((t) => <span key={t} className="label border border-line rounded-[2px] px-1.5 py-0.5">{t}</span>)}</div>}
-        </aside>
+
+        {(game.description || game.controls || game.tags?.length > 0) && (
+          <section className="bg-card rounded-3xl p-5 sm:p-6 grid sm:grid-cols-2 gap-6">
+            {game.description && <div><div className="label mb-1.5">About</div><p className="font-medium leading-relaxed whitespace-pre-wrap">{game.description}</p></div>}
+            {game.controls && <div><div className="label mb-1.5">Controls</div><p className="font-medium leading-relaxed whitespace-pre-wrap">{game.controls}</p></div>}
+            {game.tags?.length > 0 && <div className="sm:col-span-2 flex flex-wrap gap-1.5">{game.tags.map((t) => <span key={t} className="text-xs font-extrabold bg-sunk rounded-full px-3 py-1">{t}</span>)}</div>}
+          </section>
+        )}
+
+        <div className="max-w-2xl"><Comments gameId={game.id} /></div>
       </div>
 
-      <div className="max-w-2xl"><Comments gameId={game.id} /></div>
-
-      {more.length > 0 && (
-        <section>
-          <SectionHead title={`More ${game.category}`} />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{more.map((g) => <GameTile key={g.id} game={g} />)}</div>
-        </section>
-      )}
+      <aside>
+        <h2 className="display text-2xl mb-3">More games</h2>
+        <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-2 gap-3">
+          {more.map((g) => <Tile key={g.id} game={g} />)}
+        </div>
+      </aside>
     </div>
   );
 }

@@ -1,15 +1,17 @@
 "use client";
 import { useState } from "react";
-import { addDoc, collection, deleteDoc, doc, getDocs, serverTimestamp, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useGames } from "@/lib/data";
 import type { Game } from "@/lib/types";
 import { CATEGORIES } from "@/lib/util";
 import { Field, ImagePicker, Status } from "./common";
-import Thumb from "../Thumb";
+import { Art2 } from "../Cover";
+import { SAMPLES } from "@/lib/samples";
 
 const blank = { title: "", description: "", controls: "", category: "Arcade", tags: "", kind: "html" as "html" | "link", html: "", url: "", thumbnail: "", featured: false, needsStorage: false };
-const MAX_DOC = 950_000; // Firestore hard limit is 1 MiB per document
+const MAX_HTML = 950_000; // Firestore hard limit is 1 MiB per document; game source has its own doc
+const MAX_LISTING = 400_000; // listing doc (thumbnail etc.) is downloaded by every visitor, keep it small
 
 export default function GamesAdmin() {
   const { data: games } = useGames();
@@ -18,9 +20,10 @@ export default function GamesAdmin() {
   const [msg, setMsg] = useState(""); const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
   const set = <K extends keyof typeof blank>(k: K, v: (typeof blank)[K]) => setF((p) => ({ ...p, [k]: v }));
 
-  function edit(g: Game) {
+  async function edit(g: Game) {
     setEditing(g.id);
-    setF({ title: g.title, description: g.description ?? "", controls: g.controls ?? "", category: g.category, tags: (g.tags ?? []).join(", "), kind: g.kind, html: g.html ?? "", url: g.url ?? "", thumbnail: g.thumbnail ?? "", featured: !!g.featured, needsStorage: !!g.needsStorage });
+    const html = g.kind === "html" ? ((await getDoc(doc(db, "gameFiles", g.id))).data()?.html as string) ?? "" : "";
+    setF({ title: g.title, description: g.description ?? "", controls: g.controls ?? "", category: g.category, tags: (g.tags ?? []).join(", "), kind: g.kind, html, url: g.url ?? "", thumbnail: g.thumbnail ?? "", featured: !!g.featured, needsStorage: !!g.needsStorage });
     setMsg(""); setErr(""); window.scrollTo({ top: 0, behavior: "smooth" });
   }
   const reset = () => { setEditing(null); setF(blank); };
@@ -32,16 +35,39 @@ export default function GamesAdmin() {
     const payload: Record<string, unknown> = {
       title: f.title.trim(), description: f.description.trim(), controls: f.controls.trim(), category: f.category,
       tags: f.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean), kind: f.kind,
-      html: f.kind === "html" ? f.html : "", url: f.kind === "link" ? f.url.trim() : "",
+      url: f.kind === "link" ? f.url.trim() : "",
       thumbnail: f.thumbnail, featured: f.featured, needsStorage: f.needsStorage,
     };
-    const size = new Blob([JSON.stringify(payload)]).size;
-    if (size > MAX_DOC) return setErr(`Too big for Firestore: ${(size / 1024).toFixed(0)} KB of ~930 KB. Host the game elsewhere and add it as a link, or strip big inline assets.`);
+    const htmlSize = new Blob([f.html]).size;
+    if (f.kind === "html" && htmlSize > MAX_HTML) return setErr(`Game is ${(htmlSize / 1024).toFixed(0)} KB; Firestore caps a doc at ~1 MB. Host it elsewhere and add it as a link, or strip big inline assets.`);
+    const listSize = new Blob([JSON.stringify(payload)]).size;
+    if (listSize > MAX_LISTING) return setErr("Thumbnail/description too large. Use a smaller image.");
     setBusy(true);
     try {
-      if (editing) await updateDoc(doc(db, "games", editing), payload);
-      else await addDoc(collection(db, "games"), { ...payload, likeCount: 0, playCount: 0, createdAt: serverTimestamp() });
+      const b = writeBatch(db);
+      const ref = editing ? doc(db, "games", editing) : doc(collection(db, "games"));
+      if (editing) b.update(ref, payload);
+      else b.set(ref, { ...payload, likeCount: 0, playCount: 0, createdAt: serverTimestamp() });
+      const fileRef = doc(db, "gameFiles", ref.id);
+      if (f.kind === "html") b.set(fileRef, { html: f.html }); else b.delete(fileRef);
+      await b.commit();
       setMsg(editing ? "Saved." : "Game added."); reset();
+    } catch (x) { setErr((x as Error).message); }
+    setBusy(false);
+  }
+
+  async function addStarters() {
+    setBusy(true); setErr("");
+    try {
+      for (const sm of SAMPLES) {
+        const b = writeBatch(db);
+        const ref = doc(collection(db, "games"));
+        const { html, ...meta } = sm;
+        b.set(ref, { ...meta, kind: "html", url: "", thumbnail: "", featured: false, needsStorage: false, likeCount: 0, playCount: 0, createdAt: serverTimestamp() });
+        b.set(doc(db, "gameFiles", ref.id), { html });
+        await b.commit();
+      }
+      setMsg("Starter games added.");
     } catch (x) { setErr((x as Error).message); }
     setBusy(false);
   }
@@ -53,7 +79,9 @@ export default function GamesAdmin() {
         const snap = await getDocs(collection(db, "games", g.id, sub));
         const b = writeBatch(db); snap.docs.forEach((d) => b.delete(d.ref)); await b.commit();
       }
-      await deleteDoc(doc(db, "games", g.id));
+      const b = writeBatch(db);
+      b.delete(doc(db, "gameFiles", g.id)); b.delete(doc(db, "games", g.id));
+      await b.commit();
       if (editing === g.id) reset();
     } catch (x) { setErr((x as Error).message); }
   }
@@ -106,12 +134,13 @@ export default function GamesAdmin() {
 
       <div>
         <h2 className="display text-2xl mb-4">All games <span className="text-muted">{games.length}</span></h2>
+        {games.length === 0 && <button type="button" className="btn btn-pine mb-4" disabled={busy} onClick={addStarters}>Add 2 starter games</button>}
         <ul className="space-y-2">
           {games.map((g) => (
-            <li key={g.id} className="flex items-center gap-3 border-2 border-line rounded-[3px] p-2 bg-panel">
-              <div className="w-14 h-10 shrink-0 overflow-hidden rounded-[2px]"><Thumb game={g} className="!text-3xl" /></div>
+            <li key={g.id} className="flex items-center gap-3 border-2 border-line rounded-2xl p-2 bg-card">
+              <div className="w-11 h-11 shrink-0 overflow-hidden rounded-xl"><Art2 game={g} compact /></div>
               <div className="min-w-0 flex-1"><div className="truncate font-medium">{g.title}</div><div className="label">{g.kind} · ♥ {g.likeCount ?? 0}</div></div>
-              <button className="label hover:text-pine" onClick={() => edit(g)}>edit</button>
+              <button className="label hover:text-link" onClick={() => edit(g)}>edit</button>
               <button className="label hover:text-hot" onClick={() => remove(g)}>del</button>
             </li>
           ))}

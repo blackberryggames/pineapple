@@ -18,7 +18,7 @@ export default function Admin() {
   const [sent, setSent] = useState(false);
 
   if (loading) return <Loading />;
-  if (!user) return <p>This area is for the site admin. <Link href="/login/" className="text-pine underline">Sign in</Link>.</p>;
+  if (!user) return <p>This area is for the site admin. <Link href="/login/" className="text-link underline">Sign in</Link>.</p>;
   if (!isAdmin) {
     const right = user.email?.toLowerCase() === ADMIN_EMAIL;
     return (

@@ -65,11 +65,11 @@ export default function Login() {
       </form>
 
       <div className="flex justify-between text-sm mt-5 text-muted">
-        <button className="underline underline-offset-4 hover:text-cream" onClick={() => { setMode(mode === "in" ? "up" : "in"); setErr(""); }}>
+        <button className="underline underline-offset-4 hover:text-fg" onClick={() => { setMode(mode === "in" ? "up" : "in"); setErr(""); }}>
           {mode === "in" ? "Need an account?" : "Have an account?"}
         </button>
         {mode === "in" && (
-          <button className="underline underline-offset-4 hover:text-cream" onClick={async () => {
+          <button className="underline underline-offset-4 hover:text-fg" onClick={async () => {
             if (!email) return setErr("Type your email above first.");
             try { await sendPasswordResetEmail(auth, email); setErr(""); setInfo("Reset link sent."); } catch (e) { setErr(nice(e)); }
           }}>Forgot password?</button>

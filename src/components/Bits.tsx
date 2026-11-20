@@ -1,14 +1,21 @@
-export function SectionHead({ title, right }: { title: string; right?: React.ReactNode }) {
+import Link from "next/link";
+import Icon from "./Icon";
+
+export function SectionHead({ title, href, linkText = "See all" }: { title: string; href?: string; linkText?: string }) {
   return (
-    <div className="flex items-end justify-between border-b-2 border-line pb-2 mb-5">
-      <h2 className="display text-2xl sm:text-3xl">{title}</h2>
-      {right}
+    <div className="flex items-center justify-between mb-3">
+      <h2 className="display text-2xl sm:text-[1.7rem]">{title}</h2>
+      {href && <Link href={href} className="flex items-center gap-0.5 text-sm font-extrabold text-link hover:underline underline-offset-4">{linkText}<Icon name="chev" size={16} /></Link>}
     </div>
   );
 }
 export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="border-2 border-dashed border-line rounded-[3px] p-8 text-center text-muted">{children}</div>;
+  return <div className="bg-sunk rounded-3xl p-10 text-center text-muted font-semibold">{children}</div>;
 }
 export function Loading() {
-  return <div className="label py-8">Loading…</div>;
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 animate-pulse" aria-label="Loading">
+      {Array.from({ length: 10 }).map((_, i) => <div key={i} className="aspect-square rounded-[18px] bg-sunk" />)}
+    </div>
+  );
 }

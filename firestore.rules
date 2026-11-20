@@ -44,6 +44,9 @@ service cloud.firestore {
       }
     }
 
+    // Game source code is kept apart from the listing doc so the home page stays light.
+    match /gameFiles/{id}     { allow read: if true; allow write: if isAdmin(); }
+
     match /announcements/{id} { allow read: if true; allow write: if isAdmin(); }
     match /changelogs/{id}    { allow read: if true; allow write: if isAdmin(); }
     match /pages/{id}         { allow read: if true; allow write: if isAdmin(); }

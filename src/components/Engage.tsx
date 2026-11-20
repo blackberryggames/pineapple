@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import type { Comment } from "@/lib/types";
 import { timeAgo } from "@/lib/util";
+import Icon from "./Icon";
 
 export function LikeButton({ gameId, count }: { gameId: string; count: number }) {
   const { user } = useAuth();
@@ -35,10 +36,10 @@ export function LikeButton({ gameId, count }: { gameId: string; count: number })
 
   return (
     <div className="flex items-center gap-3">
-      <button onClick={toggle} disabled={busy} aria-pressed={liked} className={`btn ${liked ? "btn-pine" : ""}`}>
-        <span aria-hidden>{liked ? "♥" : "♡"}</span> {liked ? "Liked" : "Like"} · {Math.max(0, count)}
+      <button onClick={toggle} disabled={busy} aria-pressed={liked} className={`btn ${liked ? "!border-hot" : ""}`}>
+        <Icon name="heart" size={18} fill={liked} className={liked ? "text-hot" : ""} />{liked ? "Liked" : "Like"} · {Math.max(0, count)}
       </button>
-      {note && <span className="text-sm text-muted">{note} {!user && <Link href="/login/" className="text-pine underline">Sign in</Link>}</span>}
+      {note && <span className="text-sm text-muted">{note} {!user && <Link href="/login/" className="text-link underline">Sign in</Link>}</span>}
     </div>
   );
 }
@@ -84,20 +85,20 @@ export function Comments({ gameId }: { gameId: string }) {
           </div>
         </form>
       ) : (
-        <p className="mb-6 text-muted"><Link href="/login/" className="text-pine underline underline-offset-4">Sign in</Link> to comment.</p>
+        <p className="mb-6 text-muted"><Link href="/login/" className="text-link underline underline-offset-4">Sign in</Link> to comment.</p>
       )}
       <ul className="space-y-4">
         {list.map((c) => (
-          <li key={c.id} className="border-l-2 border-line pl-3">
+          <li key={c.id} className="flex gap-3"><span className="w-9 h-9 rounded-full bg-pine text-ink grid place-items-center font-extrabold shrink-0">{c.name.charAt(0).toUpperCase()}</span><div className="flex-1 min-w-0 bg-card rounded-2xl rounded-tl-sm px-4 py-2.5">
             <div className="flex items-baseline gap-2">
-              <span className="font-semibold">{c.name}</span>
+              <span className="font-extrabold">{c.name}</span>
               <span className="label">{timeAgo(c.createdAt)}</span>
               {(isAdmin || user?.uid === c.uid) && (
                 <button className="label ml-auto hover:text-hot" onClick={() => deleteDoc(doc(db, "games", gameId, "comments", c.id))}>delete</button>
               )}
             </div>
-            <p className="whitespace-pre-wrap break-words mt-0.5">{c.text}</p>
-          </li>
+            <p className="whitespace-pre-wrap break-words mt-0.5 font-medium">{c.text}</p>
+          </div></li>
         ))}
       </ul>
     </section>

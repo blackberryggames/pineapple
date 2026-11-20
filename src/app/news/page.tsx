@@ -10,12 +10,12 @@ export default function News() {
     <div className="max-w-2xl">
       <h1 className="display text-4xl sm:text-5xl mb-8">News</h1>
       {loading ? <Loading /> : sorted.length === 0 ? <Empty>No announcements yet.</Empty> : (
-        <ul className="space-y-8">
+        <ul className="space-y-4">
           {sorted.map((a) => (
-            <li key={a.id} className="border-l-4 border-pine pl-4">
+            <li key={a.id} className="bg-card rounded-3xl p-5 sm:p-6">
               <div className="label">{fmtDate(a.createdAt)}{a.pinned ? " · pinned" : ""}</div>
-              <h2 className="text-xl font-semibold mt-1">{a.title}</h2>
-              <p className="mt-2 text-cream/90 whitespace-pre-wrap leading-relaxed">{a.body}</p>
+              <h2 className="display text-2xl mt-1">{a.title}</h2>
+              <p className="mt-2 font-medium whitespace-pre-wrap leading-relaxed">{a.body}</p>
             </li>
           ))}
         </ul>
