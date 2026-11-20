@@ -1,5 +1,7 @@
 # Pineapple Games
 
+Live site: https://blackberryggames.github.io/pineapple/
+
 Next.js (static export) + Tailwind + Firebase Auth/Firestore. Deploys to GitHub Pages.
 
 ## One-time setup
