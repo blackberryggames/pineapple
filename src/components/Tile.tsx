@@ -13,11 +13,11 @@ export default function Tile({ game, className = "", big = false }: { game: Game
           <span className={`display text-white leading-tight block ${big ? "text-3xl" : "text-base"} line-clamp-2`}>{game.title}</span>
         </div>
       )}
-      <span className="absolute top-2 right-2 flex items-center gap-1 bg-white/90 text-fg text-xs font-extrabold rounded-full px-2 py-0.5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity">
+      <span className="absolute top-2 right-2 flex items-center gap-1 bg-white/90 text-fg text-xs font-extrabold rounded-md px-1.5 py-0.5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity">
         <Icon name="heart" size={12} fill className="text-hot" />{game.likeCount ?? 0}
       </span>
-      <span className="absolute inset-0 grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/25" aria-hidden>
-        <span className="w-12 h-12 rounded-full bg-pine text-ink grid place-items-center shadow-lg"><Icon name="play" size={22} fill /></span>
+      <span className="absolute inset-0 grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20" aria-hidden>
+        <span className="w-11 h-11 rounded-full bg-pine text-ink grid place-items-center"><Icon name="play" size={20} fill /></span>
       </span>
     </Link>
   );

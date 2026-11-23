@@ -24,7 +24,7 @@ function Art({ kind, a, b }: { kind: number; a: string; b: string }) {
 }
 
 /** Generated cover for games with no uploaded thumbnail: a flat colour scheme, one bold shape, the title as a wordmark. */
-export function Cover({ title, compact = false }: { title: string; compact?: boolean }) {
+export function Cover({ title, compact = false, bare = false }: { title: string; compact?: boolean; bare?: boolean }) {
   const h = hashStr(title);
   const s = SCHEMES[h % SCHEMES.length];
   const kind = hashStr(title + "~art") % 6;
@@ -33,7 +33,7 @@ export function Cover({ title, compact = false }: { title: string; compact?: boo
   return (
     <div className="w-full h-full relative overflow-hidden" style={{ background: s.bg, color: s.fg, containerType: "inline-size" }}>
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden><Art kind={kind} a={s.a} b={s.b} /></svg>
-      {compact ? (
+      {bare ? null : compact ? (
         <span className="absolute inset-0 grid place-items-center display" style={{ fontSize: "60cqw" }}>{title.trim().charAt(0).toUpperCase()}</span>
       ) : (
         <span className="absolute left-[7cqw] right-[7cqw] bottom-[8cqw] display uppercase" style={{ fontSize: `${size}cqw`, lineHeight: 0.92, transform: "rotate(-3deg)", transformOrigin: "left bottom", overflowWrap: "anywhere" }}>
@@ -44,10 +44,10 @@ export function Cover({ title, compact = false }: { title: string; compact?: boo
   );
 }
 
-export function Art2({ game, compact }: { game: Pick<Game, "title" | "thumbnail">; compact?: boolean }) {
+export function Art2({ game, compact, bare }: { game: Pick<Game, "title" | "thumbnail">; compact?: boolean; bare?: boolean }) {
   if (game.thumbnail) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={game.thumbnail} alt="" className="w-full h-full object-cover" loading="lazy" />;
   }
-  return <Cover title={game.title} compact={compact} />;
+  return <Cover title={game.title} compact={compact} bare={bare} />;
 }

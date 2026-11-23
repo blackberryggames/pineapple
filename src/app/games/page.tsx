@@ -43,15 +43,15 @@ function Browse() {
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
-        <h1 className="display text-4xl sm:text-5xl">{q ? <>Results for “{q}”</> : cat === "All" ? "All games" : cat}</h1>
-        <span className="label pb-1">{shown.length} game{shown.length === 1 ? "" : "s"}</span>
+        <h1 className="title text-3xl sm:text-4xl">{q ? <>Results for “{q}”</> : cat === "All" ? "All games" : cat}</h1>
+        <span className="text-sm font-medium text-muted pb-1">{shown.length} game{shown.length === 1 ? "" : "s"}</span>
       </div>
 
       <div className="flex flex-col md:flex-row gap-3 md:items-center mb-6">
         <div className="flex gap-2 overflow-x-auto hide-scroll flex-1 -mx-1 px-1">
           {cats.map((c) => <button key={c} className="chip" aria-pressed={cat === c} onClick={() => set("cat", c === "All" ? null : c)}>{c}</button>)}
         </div>
-        <select className="field md:!w-44 !py-1.5 !rounded-full" value={sort} onChange={(e) => set("sort", e.target.value)} aria-label="Sort games">
+        <select className="field md:!w-44 !h-9 !py-0" value={sort} onChange={(e) => set("sort", e.target.value)} aria-label="Sort games">
           {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </div>

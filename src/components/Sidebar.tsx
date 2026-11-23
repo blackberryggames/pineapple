@@ -40,26 +40,26 @@ export function Sidebar() {
   const active = useActive();
   const link = (it: { href: string; label: string; icon: string }) => (
     <Link key={it.href} href={it.href} aria-current={active(it.href) ? "page" : undefined}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl font-extrabold text-[.95rem] transition-colors ${active(it.href) ? "bg-pine text-ink" : "hover:bg-sunk"}`}>
-      <Icon name={it.icon} size={19} />{it.label}
+      className={`flex items-center gap-3 px-3 h-9 rounded-lg text-sm font-semibold transition-colors ${active(it.href) ? "bg-sunk text-fg" : "text-fg/75 hover:bg-sunk hover:text-fg"}`}>
+      <Icon name={it.icon} size={18} className={active(it.href) ? "text-link" : "text-muted"} />{it.label}
     </Link>
   );
   return (
-    <aside className="hidden lg:block w-56 shrink-0 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto py-5 pl-5 pr-3">
+    <aside className="hidden lg:block w-56 shrink-0 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto py-5 pl-4 pr-3">
       <nav className="space-y-0.5">{top.map(link)}</nav>
-      <div className="label px-3 mt-6 mb-2">Categories</div>
+      <div className="label px-3 mt-6 mb-1.5">Categories</div>
       <nav className="space-y-0.5">
         {CATEGORIES.map((c, i) => {
           const href = `/games/?cat=${encodeURIComponent(c)}`;
           return (
             <Link key={c} href={href} aria-current={active(href) ? "page" : undefined}
-              className={`flex items-center gap-3 px-3 py-1.5 rounded-xl font-bold text-sm ${active(href) ? "bg-fg text-page" : "hover:bg-sunk"}`}>
-              <span className="w-3 h-3 rounded-full shrink-0" style={{ background: DOTS[i % DOTS.length] }} />{c}
+              className={`flex items-center gap-3 px-3 h-8 rounded-lg text-sm font-medium ${active(href) ? "bg-sunk text-fg font-semibold" : "text-fg/75 hover:bg-sunk hover:text-fg"}`}>
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: DOTS[i % DOTS.length] }} />{c}
             </Link>
           );
         })}
       </nav>
-      <div className="h-[2px] bg-line my-5 mx-3" />
+      <div className="h-px bg-line my-4 mx-3" />
       <nav className="space-y-0.5">{more.map(link)}</nav>
     </aside>
   );
@@ -70,7 +70,7 @@ export function MobileNav() {
   const active = useActive();
   const items = [...top, ...CATEGORIES.map((c) => ({ href: `/games/?cat=${encodeURIComponent(c)}`, label: c, icon: "" })), ...more];
   return (
-    <nav className="lg:hidden flex gap-2 overflow-x-auto hide-scroll px-3 sm:px-5 py-2.5 border-b-2 border-line bg-page">
+    <nav className="lg:hidden flex gap-2 overflow-x-auto hide-scroll px-3 sm:px-5 py-2.5 border-b border-line bg-page">
       {items.map((it) => <Link key={it.href} href={it.href} className="chip" aria-pressed={active(it.href)}>{it.label}</Link>)}
     </nav>
   );

@@ -11,7 +11,7 @@ export function PineappleMark({ size = 34 }: { size?: number }) {
 export default function Logo() {
   return (
     <span className="flex items-center gap-2 whitespace-nowrap">
-      <PineappleMark />
+      <PineappleMark size={30} />
       <span className="display text-[1.45rem] leading-none tracking-wide">pineapple<span className="text-link hidden sm:inline"> games</span></span>
     </span>
   );

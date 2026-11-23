@@ -23,21 +23,21 @@ export default function NewsAdmin() {
   }
 
   return (
-    <div className="grid lg:grid-cols-[1fr_22rem] gap-10">
-      <form onSubmit={save} className="space-y-4">
-        <h2 className="display text-2xl">{editing ? "Edit announcement" : "New announcement"}</h2>
+    <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
+      <form onSubmit={save} className="space-y-4 card p-5 sm:p-6 self-start">
+        <h2 className="title text-xl">{editing ? "Edit announcement" : "New announcement"}</h2>
         <Field label="Headline"><input className="field" required value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
         <Field label="Message"><textarea className="field" rows={6} required value={body} onChange={(e) => setBody(e.target.value)} /></Field>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} /> Pin to the top</label>
         <div className="flex items-center gap-3">
-          <button className="btn btn-pine">{editing ? "Save" : "Post"}</button>
+          <button className="btn btn-primary">{editing ? "Save" : "Post"}</button>
           {editing && <button type="button" className="btn btn-ghost" onClick={reset}>Cancel</button>}
           <Status msg={msg} err={err} />
         </div>
       </form>
       <ul className="space-y-2">
         {data.map((a) => (
-          <li key={a.id} className="border-2 border-line rounded-2xl p-3 bg-card">
+          <li key={a.id} className="border border-line rounded-xl p-3 bg-card">
             <div className="label">{fmtDate(a.createdAt)}{a.pinned ? " · pinned" : ""}</div>
             <div className="font-medium">{a.title}</div>
             <div className="flex gap-4 mt-1">

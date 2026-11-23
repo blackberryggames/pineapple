@@ -33,9 +33,9 @@ export default function ChangelogAdmin() {
   const load = (c: Changelog) => { setEditing(c.id); setVersion(c.version); setTitle(c.title); setSummary(c.summary ?? ""); setEntries(c.entries); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   return (
-    <div className="grid lg:grid-cols-[1fr_22rem] gap-10">
-      <form onSubmit={save} className="space-y-4">
-        <h2 className="display text-2xl">{editing ? "Edit release" : "New release"}</h2>
+    <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
+      <form onSubmit={save} className="space-y-4 card p-5 sm:p-6 self-start">
+        <h2 className="title text-xl">{editing ? "Edit release" : "New release"}</h2>
         <div className="grid sm:grid-cols-[8rem_1fr] gap-4">
           <Field label="Version"><input className="field" required placeholder="1.4" value={version} onChange={(e) => setVersion(e.target.value)} /></Field>
           <Field label="Title"><input className="field" required placeholder="Search and fullscreen" value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
@@ -55,14 +55,14 @@ export default function ChangelogAdmin() {
           <button type="button" className="btn btn-ghost mt-2" onClick={() => setEntries((es) => [...es, { kind: es.at(-1)?.kind ?? "added", text: "" }])}>+ Add line</button>
         </div>
         <div className="flex items-center gap-3">
-          <button className="btn btn-pine">{editing ? "Save" : "Publish"}</button>
+          <button className="btn btn-primary">{editing ? "Save" : "Publish"}</button>
           {editing && <button type="button" className="btn btn-ghost" onClick={reset}>Cancel</button>}
           <Status msg={msg} err={err} />
         </div>
       </form>
       <ul className="space-y-2">
         {data.map((c) => (
-          <li key={c.id} className="border-2 border-line rounded-2xl p-3 bg-card">
+          <li key={c.id} className="border border-line rounded-xl p-3 bg-card">
             <div className="label">{fmtDate(c.createdAt)}</div>
             <div className="font-medium"><span className="text-link">{c.version}</span> {c.title}</div>
             <div className="flex gap-4 mt-1">

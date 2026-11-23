@@ -16,12 +16,13 @@ const P: Record<string, string> = {
   plus: "M12 5v14M5 12h14",
   close: "M6 6l12 12M18 6 6 18",
   chev: "M9 6l6 6-6 6",
+  chevl: "M15 6l-6 6 6 6",
   user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
   chat: "M4 5h16v11H9l-5 4z",
 };
 export default function Icon({ name, size = 20, fill = false, className = "" }: { name: keyof typeof P | string; size?: number; fill?: boolean; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <path d={P[name]} />
     </svg>
   );

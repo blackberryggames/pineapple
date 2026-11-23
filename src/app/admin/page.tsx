@@ -23,11 +23,11 @@ export default function Admin() {
     const right = user.email?.toLowerCase() === ADMIN_EMAIL;
     return (
       <div className="max-w-md space-y-3">
-        <h1 className="display text-3xl">No access</h1>
+        <h1 className="title text-3xl">No access</h1>
         {right && !user.emailVerified ? (
           <>
             <p className="text-muted">Your email isn&apos;t verified yet. Verify it (or sign in with Google) to unlock admin.</p>
-            <button className="btn btn-pine" disabled={sent} onClick={async () => { await sendEmailVerification(user); setSent(true); }}>{sent ? "Sent. Check your inbox, then reload." : "Send verification email"}</button>
+            <button className="btn btn-primary" disabled={sent} onClick={async () => { await sendEmailVerification(user); setSent(true); }}>{sent ? "Sent. Check your inbox, then reload." : "Send verification email"}</button>
           </>
         ) : <p className="text-muted">Only the site admin can use this page.</p>}
       </div>
@@ -36,8 +36,8 @@ export default function Admin() {
 
   return (
     <div>
-      <h1 className="display text-4xl sm:text-5xl mb-6">Admin</h1>
-      <div className="flex gap-2 mb-8 flex-wrap">{TABS.map((t) => <button key={t} className="chip" aria-pressed={tab === t} onClick={() => setTab(t)}>{t}</button>)}</div>
+      <h1 className="title text-3xl sm:text-4xl mb-6">Admin</h1>
+      <div className="flex gap-1 mb-8 border-b border-line overflow-x-auto hide-scroll">{TABS.map((t) => <button key={t} onClick={() => setTab(t)} aria-current={tab === t} className={`px-4 h-10 text-sm font-semibold -mb-px border-b-2 whitespace-nowrap ${tab === t ? "border-fg text-fg" : "border-transparent text-muted hover:text-fg"}`}>{t}</button>)}</div>
       {tab === "Games" && <GamesAdmin />}
       {tab === "Announcements" && <NewsAdmin />}
       {tab === "Changelog" && <ChangelogAdmin />}

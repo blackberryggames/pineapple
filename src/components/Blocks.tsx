@@ -9,7 +9,7 @@ export default function Blocks({ blocks }: { blocks: Block[] }) {
     <div className="space-y-6">
       {blocks.map((b, i) => {
         switch (b.type) {
-          case "heading": return <h2 key={i} className="display text-3xl sm:text-4xl pt-2">{b.text}</h2>;
+          case "heading": return <h2 key={i} className="title text-3xl sm:text-4xl pt-2">{b.text}</h2>;
           case "text": return <div key={i} className="prose-plain max-w-2xl text-[1.05rem] font-medium">{b.text.split(/\n{2,}/).map((para, j) => <p key={j}>{linkify(para)}</p>)}</div>;
           case "image": return (
             <figure key={i}>

@@ -87,9 +87,9 @@ export default function GamesAdmin() {
   }
 
   return (
-    <div className="grid lg:grid-cols-[1fr_22rem] gap-10">
-      <form onSubmit={save} className="space-y-4">
-        <h2 className="display text-2xl">{editing ? "Edit game" : "Add a game"}</h2>
+    <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start">
+      <form onSubmit={save} className="space-y-4 card p-5 sm:p-6 self-start">
+        <h2 className="title text-xl">{editing ? "Edit game" : "Add a game"}</h2>
         <Field label="Title"><input className="field" required value={f.title} onChange={(e) => set("title", e.target.value)} /></Field>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Category">
@@ -126,18 +126,18 @@ export default function GamesAdmin() {
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.featured} onChange={(e) => set("featured", e.target.checked)} /> Feature on the home page</label>
 
         <div className="flex items-center gap-3">
-          <button className="btn btn-pine" disabled={busy}>{editing ? "Save changes" : "Add game"}</button>
+          <button className="btn btn-primary" disabled={busy}>{editing ? "Save changes" : "Add game"}</button>
           {editing && <button type="button" className="btn btn-ghost" onClick={reset}>Cancel</button>}
           <Status msg={msg} err={err} />
         </div>
       </form>
 
       <div>
-        <h2 className="display text-2xl mb-4">All games <span className="text-muted">{games.length}</span></h2>
-        {games.length === 0 && <button type="button" className="btn btn-pine mb-4" disabled={busy} onClick={addStarters}>Add 2 starter games</button>}
+        <h2 className="title text-xl mb-4">All games <span className="text-muted">{games.length}</span></h2>
+        {games.length === 0 && <button type="button" className="btn btn-primary mb-4" disabled={busy} onClick={addStarters}>Add 2 starter games</button>}
         <ul className="space-y-2">
           {games.map((g) => (
-            <li key={g.id} className="flex items-center gap-3 border-2 border-line rounded-2xl p-2 bg-card">
+            <li key={g.id} className="flex items-center gap-3 border border-line rounded-2xl p-2 bg-card">
               <div className="w-11 h-11 shrink-0 overflow-hidden rounded-xl"><Art2 game={g} compact /></div>
               <div className="min-w-0 flex-1"><div className="truncate font-medium">{g.title}</div><div className="label">{g.kind} · ♥ {g.likeCount ?? 0}</div></div>
               <button className="label hover:text-link" onClick={() => edit(g)}>edit</button>

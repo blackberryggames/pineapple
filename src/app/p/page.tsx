@@ -13,7 +13,7 @@ function PageView() {
   if (!data) return <Empty>That page doesn&apos;t exist.</Empty>;
   return (
     <article className="max-w-3xl">
-      <h1 className="display text-4xl sm:text-6xl mb-8">{data.title}</h1>
+      <h1 className="title text-3xl sm:text-5xl mb-8">{data.title}</h1>
       <Blocks blocks={data.blocks ?? []} />
     </article>
   );
