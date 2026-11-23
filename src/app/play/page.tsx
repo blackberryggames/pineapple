@@ -37,7 +37,7 @@ function Play() {
 
   useEffect(() => { if (game) document.title = `${game.title} · Pineapple Games`; }, [game]);
 
-  if (loading) return <Loading />;
+  if (loading && !game) return <Loading />;
   if (!game) return <Empty>Game not found. It may have been removed.</Empty>;
 
   return (

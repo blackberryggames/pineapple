@@ -42,24 +42,38 @@ export function useDoc<T extends { id: string }>(path: string, id: string | null
   const { games, pages } = useShared();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Live listener. Depends ONLY on path/id: re-subscribing whenever the games list changed
+  // (e.g. the play-count bump) used to flash the page to a skeleton and rebuild the player.
   useEffect(() => {
+    if (MOCK) return;
     if (!id) { setData(null); setLoading(false); return; }
-    if (MOCK) {
-      const list = (path === "games" ? games.data : pages.data) as unknown as T[];
-      setData(list.find((x) => x.id === id) ?? null); setLoading(false); return;
-    }
     setLoading(true);
     return onSnapshot(doc(db, path, id), (s) => {
       setData(s.exists() ? ({ id: s.id, ...s.data() } as T) : null);
       setLoading(false);
     }, () => setLoading(false));
+  }, [path, id]);
+
+  useEffect(() => {
+    if (!MOCK) return;
+    const list = (path === "games" ? games.data : pages.data) as unknown as T[];
+    setData(id ? list.find((x) => x.id === id) ?? null : null); setLoading(false);
   }, [path, id, games.data, pages.data]);
+
   return { data, loading };
 }
 
-/** Game source lives in its own doc so the games list stays small. */
+const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+  Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(Object.assign(new Error("Timed out talking to Firestore"), { code: "timeout" })), ms))]);
+
+/** Game source lives in its own doc so the games list stays small. Older games kept it inline on the game doc. */
 export async function fetchGameHtml(id: string): Promise<string> {
   if (MOCK) return MOCK_HTML;
-  const s = await getDoc(doc(db, "gameFiles", id));
-  return (s.data()?.html as string) ?? "";
+  const file = await withTimeout(getDoc(doc(db, "gameFiles", id)), 15000);
+  const html = file.data()?.html;
+  if (typeof html === "string" && html.trim()) return html;
+  const legacy = (await withTimeout(getDoc(doc(db, "games", id)), 15000)).data()?.html;
+  if (typeof legacy === "string" && legacy.trim()) return legacy;
+  throw Object.assign(new Error("This game has no HTML saved"), { code: "empty" });
 }

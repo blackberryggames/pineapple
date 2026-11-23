@@ -14,13 +14,13 @@ export default function Player({ game, actions }: { game: Game; actions?: React.
   const [fs, setFs] = useState(false);
   const [started, setStarted] = useState(false);
   const [html, setHtml] = useState<string | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
   const [key, setKey] = useState(0);
 
   const realFs = () => (document as FsDoc).fullscreenElement || (document as FsDoc).webkitFullscreenElement;
 
   // new game selected -> back to the play screen
-  useEffect(() => { setStarted(false); setHtml(null); setFailed(false); }, [game.id]);
+  useEffect(() => { setStarted(false); setHtml(null); setFailed(null); }, [game.id]);
 
   useEffect(() => {
     const onChange = () => setFs(!!realFs());
@@ -36,9 +36,18 @@ export default function Player({ game, actions }: { game: Game; actions?: React.
   }, []);
 
   const start = useCallback(async () => {
-    setStarted(true);
+    setStarted(true); setFailed(null);
     if (game.kind === "html" && html === null) {
-      try { setHtml(await fetchGameHtml(game.id)); } catch { setFailed(true); }
+      try { setHtml(await fetchGameHtml(game.id)); }
+      catch (e) {
+        const code = (e as { code?: string }).code ?? "error";
+        setFailed(
+          code === "permission-denied" ? "Firestore rules don't allow reading game files yet (publish the latest firestore.rules)."
+          : code === "empty" ? "No HTML is saved for this game. Open it in Admin, paste the HTML and save."
+          : code === "timeout" || code === "unavailable" ? "Couldn't reach the database. Check your connection and try again."
+          : `Something went wrong (${code}).`
+        );
+      }
     }
     setTimeout(() => frame.current?.focus(), 80);
   }, [game.kind, game.id, html]);
@@ -78,7 +87,13 @@ export default function Player({ game, actions }: { game: Game; actions?: React.
             </div>
           </button>
         ) : failed ? (
-          <div className="flex-1 grid place-items-center text-white/80 font-bold">Couldn&apos;t load this game. Try again in a moment.</div>
+          <div className="flex-1 grid place-items-center p-6 text-center">
+            <div className="max-w-sm">
+              <p className="text-white font-semibold">Couldn&apos;t load this game</p>
+              <p className="text-white/70 text-sm mt-1">{failed}</p>
+              <button className="btn btn-pine btn-sm mt-4" onClick={() => start()}>Try again</button>
+            </div>
+          </div>
         ) : !ready ? (
           <div className="flex-1 grid place-items-center text-white/70 font-bold">Loading…</div>
         ) : (
